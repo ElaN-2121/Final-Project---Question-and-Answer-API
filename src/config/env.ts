@@ -1,22 +1,17 @@
 import "dotenv/config";
 
-const requiredEnv = (name: string): string => {
-  const value = process.env[name];
+const port = Number(process.env.PORT ?? 5000);
 
-  if (!value) {
-    throw new Error(`Missing required environment variable: ${name}`);
-  }
-
-  return value;
-};
+if (!Number.isInteger(port) || port <= 0 || port > 65535) {
+  throw new Error("PORT must be a valid port number.");
+}
 
 export const env = {
   nodeEnv: process.env.NODE_ENV ?? "development",
 
-  port: Number(process.env.PORT ?? 5000),
+  port,
 
   apiPrefix: process.env.API_PREFIX ?? "/api/v1",
 
-  corsOrigin: requiredEnv("CORS_ORIGIN"),
+  corsOrigin: process.env.CORS_ORIGIN ?? "http://localhost:5173",
 };
-
