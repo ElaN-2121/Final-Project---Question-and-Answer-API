@@ -2,6 +2,7 @@ const helmet = require('helmet');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 
+// General API rate limiter — apply globally.
 const generalLimiter = rateLimit({
   windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000,
   max: Number(process.env.RATE_LIMIT_MAX) || 100,
