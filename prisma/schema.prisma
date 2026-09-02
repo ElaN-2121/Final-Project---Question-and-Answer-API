@@ -1,0 +1,161 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+  MODERATOR
+}
+
+enum VoteType {
+  UPVOTE
+  DOWNVOTE
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  REMOVED
+}
+
+model User {
+  id              String    @id @default(uuid())
+  email           String    @unique
+  password        String
+  name            String
+  bio             String?
+  profileImageUrl String?
+  role            Role      @default(USER)
+  reputation      Int       @default(0)
+  isBlocked       Boolean   @default(false)
+  isSuspended     Boolean   @default(false)
+  suspendedUntil  DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  questions       Question[]
+  answers         Answer[]
+  comments        Comment[]
+  votes           Vote[]
+  refreshTokens   RefreshToken[]
+  reportsFiled    Report[] @relation("ReportedBy")
+  reportsReviewed Report[] @relation("ReviewedBy")
+}
+
+model Question {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  authorId    String
+  isDeleted   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  author      User          @relation(fields: [authorId], references: [id])
+  answers     Answer[]
+  comments    Comment[]
+  votes       Vote[]
+  tags        QuestionTag[]
+  reports     Report[]
+
+  @@index([authorId])
+}
+
+model Answer {
+  id         String   @id @default(uuid())
+  content    String
+  questionId String
+  authorId   String
+  isAccepted Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  question   Question  @relation(fields: [questionId], references: [id])
+  author     User      @relation(fields: [authorId], references: [id])
+  comments   Comment[]
+  votes      Vote[]
+  reports    Report[]
+
+  @@index([questionId])
+  @@index([authorId])
+}
+
+model Comment {
+  id         String   @id @default(uuid())
+  content    String
+  authorId   String
+  questionId String?
+  answerId   String?
+  createdAt  DateTime @default(now())
+
+  author     User      @relation(fields: [authorId], references: [id])
+  question   Question? @relation(fields: [questionId], references: [id])
+  answer     Answer?   @relation(fields: [answerId], references: [id])
+
+  @@index([questionId])
+  @@index([answerId])
+}
+
+model Vote {
+  id         String   @id @default(uuid())
+  userId     String
+  questionId String?
+  answerId   String?
+  type       VoteType
+  createdAt  DateTime @default(now())
+
+  user       User      @relation(fields: [userId], references: [id])
+  question   Question? @relation(fields: [questionId], references: [id])
+  answer     Answer?   @relation(fields: [answerId], references: [id])
+
+  @@unique([userId, questionId])
+  @@unique([userId, answerId])
+}
+
+model Tag {
+  id    String        @id @default(uuid())
+  name  String        @unique
+  posts QuestionTag[]
+}
+
+model QuestionTag {
+  questionId String
+  tagId      String
+
+  question Question @relation(fields: [questionId], references: [id])
+  tag      Tag      @relation(fields: [tagId], references: [id])
+
+  @@id([questionId, tagId])
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Report {
+  id           String       @id @default(uuid())
+  reporterId   String
+  questionId   String?
+  answerId     String?
+  reason       String
+  status       ReportStatus @default(PENDING)
+  reviewedById String?
+  createdAt    DateTime     @default(now())
+
+  reporter   User      @relation("ReportedBy", fields: [reporterId], references: [id])
+  reviewedBy User?     @relation("ReviewedBy", fields: [reviewedById], references: [id])
+  question   Question? @relation(fields: [questionId], references: [id])
+  answer     Answer?   @relation(fields: [answerId], references: [id])
+}
