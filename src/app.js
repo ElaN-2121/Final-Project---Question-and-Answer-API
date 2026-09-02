@@ -22,7 +22,7 @@ if (process.env.NODE_ENV === 'development') {
 app.use('/api/v1/auth', authLimiter);
 
 // --- Health check ---
-app.get('/health', (req, res) => {
+app.get('/api/v1/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 

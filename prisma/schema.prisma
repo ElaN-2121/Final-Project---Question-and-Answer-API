@@ -35,6 +35,7 @@ model User {
   reputation      Int       @default(0)
   isBlocked       Boolean   @default(false)
   isSuspended     Boolean   @default(false)
+  isVerified      Boolean   @default(false)
   suspendedUntil  DateTime?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
@@ -44,8 +45,8 @@ model User {
   comments        Comment[]
   votes           Vote[]
   refreshTokens   RefreshToken[]
-  reportsFiled    Report[] @relation("ReportedBy")
-  reportsReviewed Report[] @relation("ReviewedBy")
+  reportsFiled    Report[]       @relation("ReportedBy")
+  reportsReviewed Report[]       @relation("ReviewedBy")
 }
 
 model Question {
@@ -57,12 +58,12 @@ model Question {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  author      User          @relation(fields: [authorId], references: [id])
-  answers     Answer[]
-  comments    Comment[]
-  votes       Vote[]
-  tags        QuestionTag[]
-  reports     Report[]
+  author   User          @relation(fields: [authorId], references: [id])
+  answers  Answer[]
+  comments Comment[]
+  votes    Vote[]
+  tags     QuestionTag[]
+  reports  Report[]
 
   @@index([authorId])
 }
@@ -76,11 +77,11 @@ model Answer {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  question   Question  @relation(fields: [questionId], references: [id])
-  author     User      @relation(fields: [authorId], references: [id])
-  comments   Comment[]
-  votes      Vote[]
-  reports    Report[]
+  question Question  @relation(fields: [questionId], references: [id])
+  author   User      @relation(fields: [authorId], references: [id])
+  comments Comment[]
+  votes    Vote[]
+  reports  Report[]
 
   @@index([questionId])
   @@index([authorId])
@@ -94,9 +95,9 @@ model Comment {
   answerId   String?
   createdAt  DateTime @default(now())
 
-  author     User      @relation(fields: [authorId], references: [id])
-  question   Question? @relation(fields: [questionId], references: [id])
-  answer     Answer?   @relation(fields: [answerId], references: [id])
+  author   User      @relation(fields: [authorId], references: [id])
+  question Question? @relation(fields: [questionId], references: [id])
+  answer   Answer?   @relation(fields: [answerId], references: [id])
 
   @@index([questionId])
   @@index([answerId])
@@ -110,9 +111,9 @@ model Vote {
   type       VoteType
   createdAt  DateTime @default(now())
 
-  user       User      @relation(fields: [userId], references: [id])
-  question   Question? @relation(fields: [questionId], references: [id])
-  answer     Answer?   @relation(fields: [answerId], references: [id])
+  user     User      @relation(fields: [userId], references: [id])
+  question Question? @relation(fields: [questionId], references: [id])
+  answer   Answer?   @relation(fields: [answerId], references: [id])
 
   @@unique([userId, questionId])
   @@unique([userId, answerId])
