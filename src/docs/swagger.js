@@ -1,9 +1,7 @@
 const swaggerJsdoc = require('swagger-jsdoc');
 
 // Base config only. Each of us documents your own routes using JSDoc
-// @swagger comments directly above each route handler in your route
-// files — that's what `apis` below scans, so you never need to touch
-// this file to add your own docs.
+// @swagger comments in route and validation files are included below.
 const options = {
   definition: {
     openapi: '3.0.0',
@@ -26,7 +24,7 @@ const options = {
     },
     security: [{ bearerAuth: [] }],
   },
-  apis: ['./src/routes/*.js'],
+  apis: ['./src/routes/*.js', './src/validations/*.js'],
 };
 
 const swaggerSpec = swaggerJsdoc(options);

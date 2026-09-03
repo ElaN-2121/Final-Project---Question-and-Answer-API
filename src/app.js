@@ -21,11 +21,6 @@ if (process.env.NODE_ENV === 'development') {
 // Apply the stricter auth limiter to auth routes specifically.
 app.use('/api/v1/auth', authLimiter);
 
-// --- Health check ---
-app.get('/api/v1/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
-
 // --- Swagger docs ---
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
