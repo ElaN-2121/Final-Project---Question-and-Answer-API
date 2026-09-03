@@ -25,22 +25,24 @@ enum ReportStatus {
 }
 
 model User {
-  id                   String    @id @default(uuid())
-  email                String    @unique
-  password             String
-  name                 String
-  bio                  String?
-  profileImageUrl      String?
-  role                 Role      @default(USER)
-  reputation           Int       @default(0)
-  isBlocked            Boolean   @default(false)
-  isSuspended          Boolean   @default(false)
-  isVerified           Boolean   @default(false)
-  suspendedUntil       DateTime?
-  passwordResetToken   String?
-  passwordResetExpires DateTime?
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
+  id                       String    @id @default(uuid())
+  email                    String    @unique
+  password                 String
+  name                     String
+  bio                      String?
+  profileImageUrl          String?
+  role                     Role      @default(USER)
+  reputation               Int       @default(0)
+  isBlocked                Boolean   @default(false)
+  isSuspended              Boolean   @default(false)
+  isVerified               Boolean   @default(false)
+  emailVerificationToken   String?
+  emailVerificationExpires DateTime?
+  suspendedUntil           DateTime?
+  passwordResetToken       String?
+  passwordResetExpires     DateTime?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
 
   questions       Question[]
   answers         Answer[]
@@ -157,10 +159,9 @@ model Report {
   reviewedById String?
   createdAt    DateTime     @default(now())
 
-  reporter                 User      @relation("ReportedBy", fields: [reporterId], references: [id])
-  reviewedBy               User?     @relation("ReviewedBy", fields: [reviewedById], references: [id])
-  emailVerificationToken   String?
-  emailVerificationExpires DateTime?
-  answer                   Answer?   @relation(fields: [answerId], references: [id])
-  question                 Question? @relation(fields: [questionId], references: [id])
+  reporter   User  @relation("ReportedBy", fields: [reporterId], references: [id])
+  reviewedBy User? @relation("ReviewedBy", fields: [reviewedById], references: [id])
+
+  answer   Answer?   @relation(fields: [answerId], references: [id])
+  question Question? @relation(fields: [questionId], references: [id])
 }
