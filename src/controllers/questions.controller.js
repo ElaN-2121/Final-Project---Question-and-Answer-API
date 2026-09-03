@@ -37,23 +37,26 @@ const createQuestion = async (req, res, next) => {
   try {
     const { title, description, tags } = req.body;
 
-    const question = await prisma.$transaction(async (transaction) => {
-      const createdQuestion = await transaction.question.create({
-        data: { title, description, authorId: req.user.id },
-      });
+    const question = await prisma.$transaction(
+      async (transaction) => {
+        const createdQuestion = await transaction.question.create({
+          data: { title, description, authorId: req.user.id },
+        });
 
-      await createTagLinks(transaction, createdQuestion.id, tags);
+        await createTagLinks(transaction, createdQuestion.id, tags);
 
-      await transaction.user.update({
-        where: { id: req.user.id },
-        data: { reputation: { increment: 5 } },
-      });
+        await transaction.user.update({
+          where: { id: req.user.id },
+          data: { reputation: { increment: 5 } },
+        });
 
-      return transaction.question.findUnique({
-        where: { id: createdQuestion.id },
-        include: questionWithRelations,
-      });
-    });
+        return transaction.question.findUnique({
+          where: { id: createdQuestion.id },
+          include: questionWithRelations,
+        });
+      },
+      { timeout: 15000 }
+    );
 
     res.status(201).json({ status: 'success', data: { question } });
   } catch (error) {

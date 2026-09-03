@@ -157,8 +157,10 @@ model Report {
   reviewedById String?
   createdAt    DateTime     @default(now())
 
-  reporter   User      @relation("ReportedBy", fields: [reporterId], references: [id])
-  reviewedBy User?     @relation("ReviewedBy", fields: [reviewedById], references: [id])
-  question   Question? @relation(fields: [questionId], references: [id])
-  answer     Answer?   @relation(fields: [answerId], references: [id])
+  reporter                 User      @relation("ReportedBy", fields: [reporterId], references: [id])
+  reviewedBy               User?     @relation("ReviewedBy", fields: [reviewedById], references: [id])
+  emailVerificationToken   String?
+  emailVerificationExpires DateTime?
+  answer                   Answer?   @relation(fields: [answerId], references: [id])
+  question                 Question? @relation(fields: [questionId], references: [id])
 }

@@ -6,6 +6,7 @@ const {
   logout,
   forgotPassword,
   resetPassword,
+  verifyEmail,
 } = require('../controllers/auth.controller.js');
 const validate = require('../middlewares/validate.js');
 const {
@@ -14,6 +15,7 @@ const {
   refreshTokenSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  verifyEmailSchema,
 } = require('../validations/auth.validation.js');
 
 const router = Router();
@@ -105,6 +107,36 @@ router.post('/refresh', validate(refreshTokenSchema), refreshToken);
  *         description: Logged out successfully
  */
 router.post('/logout', logout);
+
+/**
+ * @swagger
+ * /api/v1/auth/verify-email:
+ *   get:
+ *     summary: Verify a user's email address
+ *     tags: [Authentication]
+ *     security: []
+ *     parameters:
+ *       - in: query
+ *         name: token
+ *         required: true
+ *         description: Single-use email verification token
+ *         schema:
+ *           type: string
+ *           example: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+ *     responses:
+ *       200:
+ *         description: Email verified successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: Email verified successfully
+ *       400:
+ *         description: Verification token is invalid or expired
+ *       422:
+ *         description: Verification token is missing
+ */
+router.get('/verify-email', validate(verifyEmailSchema), verifyEmail);
 
 /**
  * @swagger
