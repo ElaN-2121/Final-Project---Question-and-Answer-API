@@ -131,10 +131,19 @@ const resetPasswordSchema = z.object({
   }),
 });
 
+const verifyEmailSchema = z.object({
+  query: z.object({
+    token: z
+      .string({ required_error: 'Verification token is required' })
+      .min(1, 'Verification token cannot be empty'),
+  }),
+});
+
 module.exports = {
   registerSchema,
   loginSchema,
   refreshTokenSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  verifyEmailSchema,
 };

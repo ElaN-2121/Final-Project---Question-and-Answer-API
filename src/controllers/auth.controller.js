@@ -30,7 +30,12 @@ const createAndSendTokens = async (user, statusCode, res) => {
   });
 
   // Remove password from output
-  const { password: _, ...sanitizedUser } = user;
+  const sanitizedUser = { ...user };
+  delete sanitizedUser.password;
+  delete sanitizedUser.emailVerificationToken;
+  delete sanitizedUser.emailVerificationExpires;
+  delete sanitizedUser.passwordResetToken;
+  delete sanitizedUser.passwordResetExpires;
 
   res.status(statusCode).json({
     status: 'success',
@@ -62,6 +67,13 @@ const register = async (req, res, next) => {
     const salt = await bcrypt.genSalt(12);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const emailVerificationToken = crypto
+      .createHash('sha256')
+      .update(verificationToken)
+      .digest('hex');
+    const emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
     // 3. Create user in database (starts with reputation 0)
     const newUser = await prisma.user.create({
       data: {
@@ -69,11 +81,68 @@ const register = async (req, res, next) => {
         email,
         password: hashedPassword,
         reputation: 0,
+        emailVerificationToken,
+        emailVerificationExpires,
       },
     });
 
+    const verificationUrl = `${process.env.FRONTEND_BASE_URL || process.env.BASE_URL || `http://localhost:${process.env.PORT || 4000}`}/api/v1/auth/verify-email?token=${verificationToken}`;
+
+    try {
+      await transporter.sendMail({
+        from: process.env.SMTP_FROM || process.env.SMTP_USER,
+        to: newUser.email,
+        subject: 'Verify your KnowledgeHub email address',
+        text: `Verify your KnowledgeHub email address using this link: ${verificationUrl}. This link expires in 24 hours.`,
+        html: `<p>Verify your KnowledgeHub email address using this link:</p><p><a href="${verificationUrl}">${verificationUrl}</a></p><p>This link expires in 24 hours.</p>`,
+      });
+    } catch (mailError) {
+      await prisma.user.delete({ where: { id: newUser.id } });
+      return next(new AppError('Registration could not be completed because the verification email could not be sent.', 503));
+    }
+
     // 4. Issue tokens and return response
     await createAndSendTokens(newUser, 201, res);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Verify a user's email with a single-use, time-limited token.
+ */
+const verifyEmail = async (req, res, next) => {
+  try {
+    const emailVerificationToken = crypto
+      .createHash('sha256')
+      .update(req.query.token)
+      .digest('hex');
+
+    const user = await prisma.user.findFirst({
+      where: {
+        emailVerificationToken,
+        emailVerificationExpires: { gt: new Date() },
+      },
+      select: { id: true, isVerified: true },
+    });
+
+    if (!user) {
+      return next(new AppError('Email verification token is invalid or has expired.', 400));
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        isVerified: true,
+        emailVerificationToken: null,
+        emailVerificationExpires: null,
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Email verified successfully',
+    });
   } catch (error) {
     next(error);
   }
@@ -271,5 +340,6 @@ module.exports = {
   logout,
   forgotPassword,
   resetPassword,
+  verifyEmail,
 };
 

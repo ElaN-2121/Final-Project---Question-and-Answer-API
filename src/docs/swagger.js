@@ -11,7 +11,7 @@ const options = {
       description: 'Question & Answer platform backend API',
     },
     servers: [
-      { url: 'http://localhost:4000/api/v1', description: 'Local dev' },
+      { url: 'http://localhost:4000', description: 'Local dev' },
     ],
     components: {
       securitySchemes: {
