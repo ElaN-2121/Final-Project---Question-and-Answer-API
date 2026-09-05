@@ -18,6 +18,8 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
+
+
 // Apply the stricter auth limiter to auth routes specifically.
 app.use('/api/v1/auth', authLimiter);
 

@@ -21,7 +21,10 @@ const authLimiter = rateLimit({
 });
 
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : '*',
+  origin: [
+    'http://localhost:4000',
+    'https://final-project-question-and-answer-api.onrender.com'
+  ],
   credentials: true,
 };
 
