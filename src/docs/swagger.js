@@ -10,7 +10,8 @@ const options = {
       version: '1.0.0',
       description: 'Question & Answer platform backend API',
     },
-    servers: [
+        servers: [
+      { url: 'https://final-project-question-and-answer-api.onrender.com', description: 'Production' },
       { url: 'http://localhost:4000', description: 'Local dev' },
     ],
     components: {
